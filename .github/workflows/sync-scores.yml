@@ -1,0 +1,27 @@
+name: Sync WC2026 Scores
+
+on:
+  schedule:
+    # Every 15 min from Jun 28 – Jul 20 (UTC 00:00–04:00 and 15:00–24:00 to cover all kickoffs)
+    - cron: '0,15,30,45 0-4 28-31 6 *'    # June 28-30 late UTC
+    - cron: '0,15,30,45 15-23 28-31 6 *'  # June 28-30 afternoon/evening UTC
+    - cron: '0,15,30,45 0-4 1-20 7 *'     # July 1-20 late UTC
+    - cron: '0,15,30,45 15-23 1-20 7 *'   # July 1-20 afternoon/evening UTC
+  workflow_dispatch:  # allow manual trigger any time
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Sync scores from football-data.org → Supabase
+        env:
+          FOOTBALL_API_KEY: ${{ secrets.FOOTBALL_API_KEY }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: python .github/scripts/sync_scores.py
