@@ -90,6 +90,16 @@ export function useLiveScores({ matches, onUpdate }) {
     }
   }, [matches, onUpdate])
 
+  // Always sync once on mount to populate api_match_id + team names
+  const hasSyncedOnMount = useRef(false)
+  useEffect(() => {
+    if (!hasSyncedOnMount.current) {
+      hasSyncedOnMount.current = true
+      syncScores()
+    }
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Periodic polling when matches are live or starting soon
   useEffect(() => {
     if (!active) {
       clearTimeout(timerRef.current)
