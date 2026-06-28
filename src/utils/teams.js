@@ -84,6 +84,10 @@ export const TEAM_FLAGS = {
   'Thailand': '🇹🇭',
   'China PR': '🇨🇳',
   'China': '🇨🇳',
+  'Sweden': '🇸🇪',
+  'DR Congo': '🇨🇩',
+  'Cabo Verde': '🇨🇻',
+  'Morocco': '🇲🇦',
   'TBD': '🏳️',
 }
 
@@ -130,6 +134,9 @@ export const FIFA_RANKINGS = {
   'Nigeria': 37,
   'Cameroon': 43,
   'Tunisia': 34,
+  'Sweden': 25,
+  'DR Congo': 55,
+  'Cabo Verde': 80,
   'TBD': 999,
 }
 
