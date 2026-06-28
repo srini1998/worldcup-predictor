@@ -13,6 +13,7 @@ export const TEAM_FLAGS = {
   'USA': '🇺🇸',
   'Bosnia & Herzegovina': '🇧🇦',
   'Bosnia and Herzegovina': '🇧🇦',
+  'Bosnia-Herzegovina': '🇧🇦',
   // Group E
   'Germany': '🇩🇪',
   'Ecuador': '🇪🇨',
@@ -86,7 +87,9 @@ export const TEAM_FLAGS = {
   'China': '🇨🇳',
   'Sweden': '🇸🇪',
   'DR Congo': '🇨🇩',
+  'Congo DR': '🇨🇩',
   'Cabo Verde': '🇨🇻',
+  'Cape Verde Islands': '🇨🇻',
   'Morocco': '🇲🇦',
   'TBD': '🏳️',
 }
@@ -136,7 +139,12 @@ export const FIFA_RANKINGS = {
   'Tunisia': 34,
   'Sweden': 25,
   'DR Congo': 55,
+  'Congo DR': 55,
   'Cabo Verde': 80,
+  'Cape Verde Islands': 80,
+  'Bosnia-Herzegovina': 63,
+  'Paraguay': 68,
+  "Ivory Coast": 56,
   'TBD': 999,
 }
 
