@@ -13,7 +13,7 @@ export default function BracketPage() {
   const [selectedMatch, setSelectedMatch] = useState(null)
   const [showConfetti, setShowConfetti] = useState(false)
 
-  useLiveScores({ hasLiveMatches, matches, onUpdate: fetchMatches })
+  useLiveScores({ matches, onUpdate: fetchMatches })
 
   async function handleSavePrediction(data) {
     await savePrediction(data)

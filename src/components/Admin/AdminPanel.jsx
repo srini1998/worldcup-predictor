@@ -4,7 +4,7 @@ import { footballApi } from '../../lib/footballApi'
 import { useMatches } from '../../hooks/useMatches'
 import { calculateMatchPoints } from '../../utils/points'
 import { isUnderdog } from '../../utils/teams'
-import { ROUND_LABELS } from '../../utils/teams'
+import { ROUND_LABELS, getFlag } from '../../utils/teams'
 import LoadingSpinner from '../common/LoadingSpinner'
 
 export default function AdminPanel() {
@@ -24,11 +24,22 @@ export default function AdminPanel() {
       setSyncLog(`Got ${apiMatches.length} knockout matches. Syncing…`)
 
       for (const m of apiMatches) {
-        const existing = matches.find(db => db.api_match_id === m.api_match_id)
+        // Match by api_match_id first; fall back to kickoff time for initial seed
+        let existing = matches.find(db => db.api_match_id === m.api_match_id)
+        if (!existing && m.kickoff_utc) {
+          const apiTime = new Date(m.kickoff_utc).getTime()
+          existing = matches.find(db => {
+            if (!db.kickoff_utc) return false
+            return Math.abs(new Date(db.kickoff_utc).getTime() - apiTime) < 5 * 60 * 1000
+          })
+        }
         if (existing) {
           await supabase.from('matches').update({
+            api_match_id: m.api_match_id,
             team_home: m.team_home,
             team_away: m.team_away,
+            flag_home: getFlag(m.team_home),
+            flag_away: getFlag(m.team_away),
             score_home: m.score_home,
             score_away: m.score_away,
             winner: m.winner,
