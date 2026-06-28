@@ -7,22 +7,8 @@ export default function AuthCallback() {
   const navigate = useNavigate()
 
   useEffect(() => {
-    const code = new URLSearchParams(window.location.search).get('code')
-
-    if (code) {
-      supabase.auth.exchangeCodeForSession(code)
-        .then(({ error }) => {
-          if (error) {
-            console.error('OAuth code exchange failed:', error.message)
-            navigate('/login?error=auth_failed', { replace: true })
-          } else {
-            navigate('/', { replace: true })
-          }
-        })
-      return
-    }
-
-    // No code param — check for an existing session (implicit flow fallback)
+    // detectSessionInUrl:true in the Supabase client auto-exchanges the ?code= param.
+    // We just need to react to the resulting SIGNED_IN event.
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_IN' && session) {
         navigate('/', { replace: true })
@@ -31,6 +17,7 @@ export default function AuthCallback() {
       }
     })
 
+    // In case the exchange already completed before this component mounted
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) navigate('/', { replace: true })
     })
