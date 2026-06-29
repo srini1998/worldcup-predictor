@@ -1,61 +1,16 @@
 import { useState } from 'react'
 import { supabase } from '../../lib/supabase'
-import { footballApi } from '../../lib/footballApi'
 import { useMatches } from '../../hooks/useMatches'
 import { calculateMatchPoints } from '../../utils/points'
-import { isUnderdog } from '../../utils/teams'
 import { ROUND_LABELS, getFlag } from '../../utils/teams'
 import LoadingSpinner from '../common/LoadingSpinner'
 
 export default function AdminPanel() {
   const { matches, loading, fetchMatches } = useMatches()
   const [editingMatch, setEditingMatch] = useState(null)
-  const [syncing, setSyncing] = useState(false)
-  const [syncLog, setSyncLog] = useState('')
   const [savingScore, setSavingScore] = useState(false)
 
   const rounds = ['R32', 'R16', 'QF', 'SF', 'THIRD', 'FINAL']
-
-  async function handleSyncFromApi() {
-    setSyncing(true)
-    setSyncLog('Fetching matches from football-data.org…')
-    try {
-      const apiMatches = await footballApi.getKnockoutMatches()
-      setSyncLog(`Got ${apiMatches.length} knockout matches. Syncing…`)
-
-      for (const m of apiMatches) {
-        // Match by api_match_id first; fall back to kickoff time for initial seed
-        let existing = matches.find(db => db.api_match_id === m.api_match_id)
-        if (!existing && m.kickoff_utc) {
-          const apiTime = new Date(m.kickoff_utc).getTime()
-          existing = matches.find(db => {
-            if (!db.kickoff_utc) return false
-            return Math.abs(new Date(db.kickoff_utc).getTime() - apiTime) < 5 * 60 * 1000
-          })
-        }
-        if (existing) {
-          await supabase.from('matches').update({
-            api_match_id: m.api_match_id,
-            team_home: m.team_home,
-            team_away: m.team_away,
-            flag_home: getFlag(m.team_home),
-            flag_away: getFlag(m.team_away),
-            score_home: m.score_home,
-            score_away: m.score_away,
-            winner: m.winner,
-            status: m.status,
-            kickoff_utc: m.kickoff_utc,
-          }).eq('id', existing.id)
-        }
-      }
-      setSyncLog(`✓ Synced ${apiMatches.length} matches successfully.`)
-      fetchMatches()
-    } catch (err) {
-      setSyncLog(`✗ Error: ${err.message}`)
-    } finally {
-      setSyncing(false)
-    }
-  }
 
   async function handleSaveScore(match, scoreHome, scoreAway, status, winner) {
     setSavingScore(true)
@@ -172,21 +127,19 @@ export default function AdminPanel() {
 
       {/* API Sync */}
       <div className="card p-4 mb-6">
-        <h3 className="font-bold text-white mb-2">Sync from football-data.org</h3>
-        <p className="text-gray-500 text-xs mb-3">
-          Fetches current knockout stage fixtures and scores. Updates existing matches by api_match_id.
-        </p>
-        <div className="flex gap-3">
-          <button onClick={handleSyncFromApi} disabled={syncing} className="btn-secondary flex-shrink-0">
-            {syncing ? '⏳ Syncing…' : '🔄 Sync API'}
-          </button>
-          <button onClick={handleAddMatch} className="btn-secondary flex-shrink-0">
-            ➕ Add Match
-          </button>
+        <div className="flex items-center justify-between mb-2">
+          <h3 className="font-bold text-white">Score Sync</h3>
+          <span className="flex items-center gap-1.5 text-xs text-pitch-400 bg-pitch-400/10 px-2 py-1 rounded-full">
+            <span className="w-1.5 h-1.5 rounded-full bg-pitch-400 animate-pulse inline-block" />
+            Auto-sync active
+          </span>
         </div>
-        {syncLog && (
-          <p className="mt-3 text-xs font-mono text-gray-400 bg-navy-900 rounded p-2">{syncLog}</p>
-        )}
+        <p className="text-gray-500 text-xs mb-3">
+          GitHub Actions fetches live scores from football-data.org every 15 minutes and updates Supabase automatically.
+        </p>
+        <button onClick={handleAddMatch} className="btn-secondary flex-shrink-0">
+          ➕ Add Match
+        </button>
       </div>
 
       {/* Match list by round */}
